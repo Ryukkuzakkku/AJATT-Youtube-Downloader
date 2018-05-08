@@ -42,19 +42,10 @@ def process_videos(playlist_url, split_time):
             print(e)
 
 def split_audio_chunks(title, audio_file, split_time):
-    sound = AudioSegment.from_file(audio_file, "mp3")
-    slice_times = int(len(sound) / split_time)
-
-    for i in range (slice_times):
-        if i is not slice_times - 2:
-            print("pre-time: " + str(split_time * i))
-            print("post-time: " + str(split_time * (i + 1)))
-##            split_segment = sound[split_time * i:split_time * (i + 1)]
-##            new_title = title.replace('/', '_') + str(split_time * i) + ".00 - " + str(split_time * (i + 1)) + ".00." + 'mp4'
-            halfway_point = len(sound) / 2
-            split_segment = sound[halfway_point:]
-            split_segment.export(new_title, format='mp3' )
-        print(new_title + " Processed")
+    in_file = ffmpeg.input(audio_file)
+    in_file = ffmpeg.trim(in_file, start_frame=10, end_frame = 20)
+    in_file = ffmpeg.output(in_file, 'out.mp4')
+     
 
 
 
