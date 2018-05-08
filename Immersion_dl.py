@@ -3,6 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 import pafy
 from pydub import AudioSegment
+import ffmpeg
+
+AudioSegment.converter = r"C:\\FFmpeg\\bin\\ffmpeg.exe"
 
 def get_video_list(playlist_url):
     r = requests.get(playlist_url)
@@ -30,39 +33,36 @@ def process_videos(playlist_url, split_time):
             print("\n\n\n\n" + audio_file)
 
             filenames = os.listdir(path)
-
             for filename in filenames:
-                os.rename(audio_file, audio_file.replace(".m4a", ".mp4"))
-
-            audio_file = video.title.replace('/', '_') + ".mp4"
-
-            split_audio_chunks(audio_file)
+                os.rename(filename, filename.replace(".m4a", ".mp3"))
+                
+            split_audio_chunks(audio_file, split_time)
 
         except Exception as e:
             print(e)
 
-def split_audio_chunks(audio_file):
-    sound = AudioSegment.from_file(audio_file, "mp4")
-    slice_times = len(sound) / split_time
+def split_audio_chunks(title, audio_file, split_time):
+    sound = AudioSegment.from_file(audio_file, "mp3")
+    slice_times = int(len(sound) / split_time)
 
     for i in range (slice_times):
         if i is not slice_times - 2:
-            split_segment = sound[split_time * i:split_time * (i + 1)]
-            new_title = video.title.replace('/', '_') + str(split_time * i) + ".00 - " + str(split_time * (i + 1) + ".00." + 'mp4')
-            split_segment.export(new_title, format='mp4' )
+            print("pre-time: " + str(split_time * i))
+            print("post-time: " + str(split_time * (i + 1)))
+##            split_segment = sound[split_time * i:split_time * (i + 1)]
+##            new_title = title.replace('/', '_') + str(split_time * i) + ".00 - " + str(split_time * (i + 1)) + ".00." + 'mp4'
+            halfway_point = len(sound) / 2
+            split_segment = sound[halfway_point:]
+            split_segment.export(new_title, format='mp3' )
         print(new_title + " Processed")
 
 
 
-print(os.getcwd())        
-playlist_url = "https://www.youtube.com/watch?v=TXj6sPZiE5M&list=PLA02laFJ_V2WlY2y5aOvz_yJVOubbs51b"
-##process_videos(playlist_url, split_time=1)
-
+path = os.getcwd()
 filenames = os.listdir(path)
-
 for filename in filenames:
-    print(filename)
-
-split_audio_chunks("_a_non gets the power.mp4")
+    os.rename(filename, filename.replace(".m4a", ".mp3"))
+playlist_url = "https://www.youtube.com/watch?v=TXj6sPZiE5M&list=PLA02laFJ_V2WlY2y5aOvz_yJVOubbs51b"
+split_audio_chunks("THE BOOTY MACHINE", "THE BOOTY MACHINE.mp3", split_time=1)
 
 
