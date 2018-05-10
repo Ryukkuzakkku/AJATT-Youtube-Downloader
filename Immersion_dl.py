@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import pafy
 from pydub import AudioSegment
 import ffmpeg
+import math
 
 AudioSegment.converter = r"C:\\FFmpeg\\bin\\ffmpeg.exe"
 
@@ -42,9 +43,26 @@ def process_videos(playlist_url, split_time):
             print(e)
 
 def split_audio_chunks(title, audio_file, split_time):
-    in_file = ffmpeg.input(audio_file)
-    in_file = ffmpeg.trim(in_file, start_frame=10, end_frame = 20)
-    in_file = ffmpeg.output(in_file, 'out.mp4')
+    split_time = float(split_time * 1000)
+
+    print("problem")
+    
+    newAudio = AudioSegment.from_mp3(audio_file)
+    length = len(newAudio)
+    print(length)
+    chops = math.ceil((length) / (split_time))
+    print("chops: " + str(chops))
+    for i in range(chops):
+        if (i + 1) is not chops:
+            export_audio = newAudio[split_time * i:split_time * (i + 1)]
+            export_audio.export('newSong' + str(i) + '.mp3', format="mp3")
+        else:
+            export_audio = newAudio[split_time * i:]
+            export_audio.export('newSong' + str(i) + '.mp3', format="mp3")
+        print("exported newsong")
+
+
+    
      
 
 
@@ -54,6 +72,6 @@ filenames = os.listdir(path)
 for filename in filenames:
     os.rename(filename, filename.replace(".m4a", ".mp3"))
 playlist_url = "https://www.youtube.com/watch?v=TXj6sPZiE5M&list=PLA02laFJ_V2WlY2y5aOvz_yJVOubbs51b"
-split_audio_chunks("THE BOOTY MACHINE", "THE BOOTY MACHINE.mp3", split_time=1)
+split_audio_chunks("aaa", "Youtube_8_0.20.00.000-0.25.00.000.mp3", split_time=60)
 
 
