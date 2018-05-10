@@ -5,8 +5,18 @@ import pafy
 from pydub import AudioSegment
 import ffmpeg
 import math
+import datetime
 
 AudioSegment.converter = r"C:\\FFmpeg\\bin\\ffmpeg.exe"
+
+def time_to_minutes(time):
+    if time is not 0:
+        print("time: " + str(time / 1000))
+        s = math.ceil(time / 1000)
+        print(str(datetime.timedelta(seconds=s)))
+        return str(datetime.timedelta(seconds=s)).replace(':', '.')
+    return "0.00.00"
+    
 
 def get_video_list(playlist_url):
     r = requests.get(playlist_url)
@@ -42,23 +52,23 @@ def process_videos(playlist_url, split_time):
         except Exception as e:
             print(e)
 
-def split_audio_chunks(title, audio_file, split_time):
+def split_audio_chunks(audio_file, split_time):
     split_time = float(split_time * 1000)
+    title = audio_file.replace('.mp3', '')
+    sound = AudioSegment.from_mp3(audio_file)
+    times_to_split = math.ceil((len(sound)) / (split_time))
 
-    print("problem")
-    
-    newAudio = AudioSegment.from_mp3(audio_file)
-    length = len(newAudio)
-    print(length)
-    chops = math.ceil((length) / (split_time))
-    print("chops: " + str(chops))
-    for i in range(chops):
-        if (i + 1) is not chops:
-            export_audio = newAudio[split_time * i:split_time * (i + 1)]
-            export_audio.export('newSong' + str(i) + '.mp3', format="mp3")
-        else:
-            export_audio = newAudio[split_time * i:]
-            export_audio.export('newSong' + str(i) + '.mp3', format="mp3")
+    for i in range(times_to_split):
+        print("i: " + str(i+1) + " times_to_split is: " + str(times_to_split))
+        if i + 1 != times_to_split:
+            export_audio = sound[split_time * i:split_time * (i + 1)]
+            new_name = title + ' ' + time_to_minutes(int(split_time * i)) + ' - ' + time_to_minutes(int(split_time * (i + 1))) + '.mp3'
+            export_audio.export(new_name, format="mp3")
+        else: #if last time
+            print("entered else loop")
+            export_audio = sound[split_time * i:]
+            new_name = title + ' ' + time_to_minutes(int(split_time * i)) + ' - ' + time_to_minutes(len(sound)) + '.mp3'
+            export_audio.export(new_name, format="mp3")
         print("exported newsong")
 
 
@@ -72,6 +82,6 @@ filenames = os.listdir(path)
 for filename in filenames:
     os.rename(filename, filename.replace(".m4a", ".mp3"))
 playlist_url = "https://www.youtube.com/watch?v=TXj6sPZiE5M&list=PLA02laFJ_V2WlY2y5aOvz_yJVOubbs51b"
-split_audio_chunks("aaa", "Youtube_8_0.20.00.000-0.25.00.000.mp3", split_time=60)
+split_audio_chunks("test_file.mp3", split_time=72)
 
 
