@@ -16,6 +16,12 @@ def time_to_minutes(time):
         print(str(datetime.timedelta(seconds=s)))
         return str(datetime.timedelta(seconds=s)).replace(':', '.')
     return "0.00.00"
+
+def convert_to_mp3(filename):
+    root = os.getcwd()
+    command = "ffmpeg -i {} {}".format(filename, filename.replace('.m4a', '.mp3'))
+    print(command)
+    os.system(command)
     
 
 def get_video_list(playlist_url):
@@ -34,28 +40,21 @@ def process_videos(playlist_url, split_time):
     path =  os.getcwd()
     link_list = get_video_list(playlist_url)
     for link in link_list:
-        try:
-            print("Downloading: " + link)
-            video = pafy.new(link)
-            bestaudio = video.getbestaudio(preftype="m4a")
-            bestaudio.download()
+        print("Downloading: " + link)
+        video = pafy.new(link)
+        bestaudio = video.getbestaudio(preftype="m4a")
+        bestaudio.download()
 
-            audio_file = video.title.replace('/', '_') + "." + bestaudio.extension
-            print("\n\n\n\n" + audio_file)
+        audio_file = video.title.replace('/', '_') + "." + bestaudio.extension
+        print("\n\n\n\n" + audio_file)
+            
+        split_audio_chunks(audio_file, split_time)
 
-            filenames = os.listdir(path)
-            for filename in filenames:
-                os.rename(filename, filename.replace(".m4a", ".mp3"))
-                
-            split_audio_chunks(audio_file, split_time)
-
-        except Exception as e:
-            print(e)
 
 def split_audio_chunks(audio_file, split_time):
     split_time = float(split_time * 1000)
-    title = audio_file.replace('.mp3', '')
-    sound = AudioSegment.from_mp3(audio_file)
+    title = audio_file.replace('.m4a', '')
+    sound = AudioSegment.from_file(audio_file)
     times_to_split = math.ceil((len(sound)) / (split_time))
 
     for i in range(times_to_split):
@@ -71,17 +70,8 @@ def split_audio_chunks(audio_file, split_time):
             export_audio.export(new_name, format="mp3")
         print("exported newsong")
 
-
-    
-     
-
-
-
-path = os.getcwd()
-filenames = os.listdir(path)
-for filename in filenames:
-    os.rename(filename, filename.replace(".m4a", ".mp3"))
 playlist_url = "https://www.youtube.com/watch?v=TXj6sPZiE5M&list=PLA02laFJ_V2WlY2y5aOvz_yJVOubbs51b"
-split_audio_chunks("test_file.mp3", split_time=72)
+process_videos(playlist_url, 30)
+##split_audio_chunks("test_file.mp3", split_time=72)
 
 
